@@ -27,6 +27,23 @@ class TextController {
     }
 
     async changeText(req, res) {
+        const { id } = req.params;
+        const { body, title, dt_publish, dt_edit, authors_id } = req.body;
+        const { img } = req.files;
+        const fileName = uuid.v4() + '.jpg';
+        img.mv(path.resolve(__dirname, '..', 'static', fileName));
+
+        if (Number.isInteger(+id)) {
+            const text = await Text.findByPk(id);
+            if (text) {
+                const updatedText = await text.update({ body, title, dt_publish, dt_edit, img: fileName });
+                return res.json(updatedText);
+            } else {
+                return next(ApiError.badRequest('Текст отсутствует'));
+            }
+        } else {
+            return next(ApiError.badRequest('Идентификатор текста не указан'));
+        }
 
     }
 
