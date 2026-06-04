@@ -49,8 +49,8 @@ const TextUser = sequelize.define('text_user', {
 User.hasOne(Role);
 Role.belongsTo(User);
 
-User.belongsToMany(Text, {through: TextUser });
-Text.belongsToMany(User, {through: TextUser });
+User.belongsToMany(Text, { through: TextUser, onDelete: 'CASCADE' });
+Text.belongsToMany(User, { through: TextUser, onDelete: 'CASCADE' });
 
 Text.hasMany(Comment);
 Comment.belongsTo(Text);
