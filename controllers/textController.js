@@ -16,8 +16,8 @@ class TextController {
             const text = await Text.create({ body, title, dt_publish, dt_edit, img: fileName });
 
             const authors = await User.findAll({ where: { id: { [Op.or]: JSON.parse(authors_id) } } });
-            if (authors && text) {
-                authors.forEach((e) => { e.addText(text.id); });
+            if (authors.length && text) {
+                authors.forEach((e) => { e.addText(text); });
             }
 
             return res.json(text);
