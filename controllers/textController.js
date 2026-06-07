@@ -1,6 +1,6 @@
 const uuid = require('uuid');
 const path = require('path');
-const { Text, User } = require('../models/models');
+const { Text, User, TextUser } = require('../models/models');
 const ApiError = require('../error/apiError');
 const { Op } = require('sequelize');
 
@@ -37,6 +37,19 @@ class TextController {
             const text = await Text.findByPk(id);
             if (text) {
                 const updatedText = await text.update({ body, title, dt_publish, dt_edit, img: fileName });
+                const extraAuthors = await TextUser.destroy({
+                    where:
+                    {
+                        userId: { [Op.not]: JSON.parse(authors_id) },
+                        textId: text.id,
+                    }
+                });
+
+                const authors = await User.findAll({ where: { id: { [Op.or]: JSON.parse(authors_id) } } });
+                if (authors.length) {
+                    authors.forEach((e) => { e.addText(text); });
+                }
+
                 return res.json(updatedText);
             } else {
                 return next(ApiError.badRequest('Текст отсутствует'));
