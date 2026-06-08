@@ -27,35 +27,39 @@ class TextController {
     }
 
     async changeText(req, res) {
-        const { id } = req.params;
-        const { body, title, dt_publish, dt_edit, authors_id } = req.body;
-        const { img } = req.files;
-        const fileName = uuid.v4() + '.jpg';
-        img.mv(path.resolve(__dirname, '..', 'static', fileName));
+        try {
+            const { id } = req.params;
+            const { body, title, dt_publish, dt_edit, authors_id } = req.body;
+            const { img } = req.files;
+            const fileName = uuid.v4() + '.jpg';
+            img.mv(path.resolve(__dirname, '..', 'static', fileName));
 
-        if (Number.isInteger(+id)) {
-            const text = await Text.findByPk(id);
-            if (text) {
-                const updatedText = await text.update({ body, title, dt_publish, dt_edit, img: fileName });
-                const extraAuthors = await TextUser.destroy({
-                    where:
-                    {
-                        userId: { [Op.not]: JSON.parse(authors_id) },
-                        textId: text.id,
+            if (Number.isInteger(+id)) {
+                const text = await Text.findByPk(id);
+                if (text) {
+                    const updatedText = await text.update({ body, title, dt_publish, dt_edit, img: fileName });
+                    const extraAuthors = await TextUser.destroy({
+                        where:
+                        {
+                            userId: { [Op.not]: JSON.parse(authors_id) },
+                            textId: text.id,
+                        }
+                    });
+
+                    const authors = await User.findAll({ where: { id: { [Op.or]: JSON.parse(authors_id) } } });
+                    if (authors.length) {
+                        authors.forEach((e) => { e.addText(text); });
                     }
-                });
 
-                const authors = await User.findAll({ where: { id: { [Op.or]: JSON.parse(authors_id) } } });
-                if (authors.length) {
-                    authors.forEach((e) => { e.addText(text); });
+                    return res.json(updatedText);
+                } else {
+                    return next(ApiError.badRequest('Текст отсутствует'));
                 }
-
-                return res.json(updatedText);
             } else {
-                return next(ApiError.badRequest('Текст отсутствует'));
+                return next(ApiError.badRequest('Идентификатор текста не указан'));
             }
-        } else {
-            return next(ApiError.badRequest('Идентификатор текста не указан'));
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
         }
 
     }
