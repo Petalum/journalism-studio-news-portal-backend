@@ -3,6 +3,8 @@ const path = require('path');
 const { Text, User, TextUser } = require('../models/models');
 const ApiError = require('../error/apiError');
 const { Op } = require('sequelize');
+const sequelize = require('../db');
+
 
 /** Controller for working with texts. */
 class TextController {
@@ -65,7 +67,36 @@ class TextController {
     }
 
     async getAll(req, res) {
+        try {
+            let { limit, page, authorId, categoryId } = req.query;
+            page = page || 1;
+            limit = limit || 9;
+            let offset = page * limit - limit;
+            let texts;
 
+            if (!authorId && !categoryId) {
+                texts = await Text.findAndCountAll({ limit, offset });
+            }
+
+            if (authorId && !categoryId) {
+                const result = await Text.findAndCountAll({
+                    limit,
+                    offset,
+                    include: {
+                        model: User,
+                        where: {
+                            id: authorId,
+                        },
+                        attributes: [],
+                    }
+                });
+                texts = result;
+            }
+
+            return res.json(texts);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 
     async getOne(req, res) {
