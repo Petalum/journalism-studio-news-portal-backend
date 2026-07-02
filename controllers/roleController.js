@@ -1,6 +1,7 @@
 const {Role} = require('../models/models');
 const ApiError = require('../error/apiError');
 
+/** Controller for working with user roles. */
 class RoleController {
     async createOne(req, res) {
         const {name} = req.body;

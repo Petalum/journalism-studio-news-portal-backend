@@ -15,10 +15,14 @@ const User = sequelize.define('user', {
 const Text = sequelize.define('text', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     body: {type: DataTypes.STRING, allowNull: false},
-    likes_count: {type: DataTypes.INTEGER, allowNull: false},
+    likes_count: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
     title: {type: DataTypes.STRING, allowNull: false},
-    views_count: {type: DataTypes.INTEGER, allowNull: false},
+    views_count: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
     img: {type: DataTypes.STRING},
+    dt_publish: {type: DataTypes.STRING},
+    dt_edit: {type: DataTypes.STRING},
+    status: {type: DataTypes.STRING, allowNull: false, defaultValue: false},
+    categoryId: {type: DataTypes.INTEGER},
 });
 
 const Role = sequelize.define('role', {
@@ -46,8 +50,8 @@ const TextUser = sequelize.define('text_user', {
 User.hasOne(Role);
 Role.belongsTo(User);
 
-User.belongsToMany(Text, {through: TextUser });
-Text.belongsToMany(User, {through: TextUser });
+User.belongsToMany(Text, { through: TextUser, onDelete: 'CASCADE' });
+Text.belongsToMany(User, { through: TextUser, onDelete: 'CASCADE' });
 
 Text.hasMany(Comment);
 Comment.belongsTo(Text);
