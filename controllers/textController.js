@@ -68,30 +68,39 @@ class TextController {
 
     async getAll(req, res) {
         try {
-            let { limit, page, authorId, categoryId } = req.query;
+            let { limit, page, authorId, categoryId, dt_publish } = req.query;
             page = page || 1;
             limit = limit || 9;
             let offset = page * limit - limit;
             let texts;
+            const textsConfig = {
+                limit,
+                offset,
+            };
 
-            if (!authorId && !categoryId) {
-                texts = await Text.findAndCountAll({ limit, offset });
-            }
-
-            if (authorId && !categoryId) {
-                const result = await Text.findAndCountAll({
-                    limit,
-                    offset,
-                    include: {
+            if (Number.isInteger(+authorId)) {
+                textsConfig.include = {
                         model: User,
                         where: {
                             id: authorId,
                         },
                         attributes: [],
-                    }
-                });
-                texts = result;
+                    };
             }
+
+            const filters = Object.entries({categoryId, dt_publish}).reduce((previous, current) => {
+                if (current[1] !== undefined) {
+                    previous = {...previous, [current[0]]: current[1]};
+                }
+                return previous;
+            }, {});
+
+
+            if (Object.keys(filters).length) {
+                textsConfig.where = filters;
+            }
+
+             texts = await Text.findAndCountAll(textsConfig);
 
             return res.json(texts);
         } catch (e) {
