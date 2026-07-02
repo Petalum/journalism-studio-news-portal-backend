@@ -22,6 +22,7 @@ const Text = sequelize.define('text', {
     dt_publish: {type: DataTypes.STRING},
     dt_edit: {type: DataTypes.STRING},
     status: {type: DataTypes.STRING, allowNull: false, defaultValue: false},
+    categoryId: {type: DataTypes.INTEGER},
 });
 
 const Role = sequelize.define('role', {
