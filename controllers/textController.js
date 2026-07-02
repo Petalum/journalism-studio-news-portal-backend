@@ -80,17 +80,17 @@ class TextController {
 
             if (Number.isInteger(+authorId)) {
                 textsConfig.include = {
-                        model: User,
-                        where: {
-                            id: authorId,
-                        },
-                        attributes: [],
-                    };
+                    model: User,
+                    where: {
+                        id: authorId,
+                    },
+                    attributes: [],
+                };
             }
 
-            const filters = Object.entries({categoryId, dt_publish}).reduce((previous, current) => {
+            const filters = Object.entries({ categoryId, dt_publish }).reduce((previous, current) => {
                 if (current[1] !== undefined) {
-                    previous = {...previous, [current[0]]: current[1]};
+                    previous = { ...previous, [current[0]]: current[1] };
                 }
                 return previous;
             }, {});
@@ -100,7 +100,7 @@ class TextController {
                 textsConfig.where = filters;
             }
 
-             texts = await Text.findAndCountAll(textsConfig);
+            texts = await Text.findAndCountAll(textsConfig);
 
             return res.json(texts);
         } catch (e) {
@@ -109,6 +109,22 @@ class TextController {
     }
 
     async getOne(req, res) {
+        try {
+            const { id } = req.params;
+            const device = await Text.findOne({
+                where: { id },
+                include: [{
+                    model: User,
+                    through: { attributes: [] },
+                    attributes: ['name', 'surname'],
+                }],
+            });
+            return res.json(device);
+
+        } catch (e) {
+            console.log(e);
+            next(ApiError.badRequest(e.message));
+        }
 
     }
 
