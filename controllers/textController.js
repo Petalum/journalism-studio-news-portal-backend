@@ -84,7 +84,8 @@ class TextController {
                     where: {
                         id: authorId,
                     },
-                    attributes: [],
+                    through: { attributes: [] },
+                    attributes: ['name', 'surname'],
                 };
             }
 
@@ -122,7 +123,6 @@ class TextController {
             return res.json(device);
 
         } catch (e) {
-            console.log(e);
             next(ApiError.badRequest(e.message));
         }
 
