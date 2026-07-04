@@ -136,7 +136,7 @@ class TextController {
             });
             if (text) {
                 await text.destroy();
-                return res.json(`Текст с id ${id} успешно удален`);
+                return res.json({message: `Текст с id ${id} успешно удален`});
             }
             throw new Error(`Текст с id ${id} не найден`);
         } catch (e) {
