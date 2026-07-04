@@ -112,7 +112,7 @@ class TextController {
     async getOne(req, res) {
         try {
             const { id } = req.params;
-            const device = await Text.findOne({
+            const text = await Text.findOne({
                 where: { id },
                 include: [{
                     model: User,
@@ -120,7 +120,7 @@ class TextController {
                     attributes: ['name', 'surname'],
                 }],
             });
-            return res.json(device);
+            return res.json(text);
 
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -129,7 +129,19 @@ class TextController {
     }
 
     async deleteOne(req, res) {
-
+        try {
+            const { id } = req.params;
+            const text = await Text.findOne({
+                where: { id },
+            });
+            if (text) {
+                await text.destroy();
+                return res.json(`Текст с id ${id} успешно удален`);
+            }
+            throw new Error(`Текст с id ${id} не найден`);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 }
 
