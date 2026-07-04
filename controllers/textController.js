@@ -28,7 +28,7 @@ class TextController {
         }
     }
 
-    async changeText(req, res) {
+    async changeText(req, res, next) {
         try {
             const { id } = req.params;
             const { body, title, dt_publish, dt_edit, authors_id } = req.body;
@@ -66,7 +66,7 @@ class TextController {
 
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let { limit, page, authorId, categoryId, dt_publish } = req.query;
             page = page || 1;
@@ -80,17 +80,18 @@ class TextController {
 
             if (Number.isInteger(+authorId)) {
                 textsConfig.include = {
-                        model: User,
-                        where: {
-                            id: authorId,
-                        },
-                        attributes: [],
-                    };
+                    model: User,
+                    where: {
+                        id: authorId,
+                    },
+                    through: { attributes: [] },
+                    attributes: ['name', 'surname'],
+                };
             }
 
-            const filters = Object.entries({categoryId, dt_publish}).reduce((previous, current) => {
+            const filters = Object.entries({ categoryId, dt_publish }).reduce((previous, current) => {
                 if (current[1] !== undefined) {
-                    previous = {...previous, [current[0]]: current[1]};
+                    previous = { ...previous, [current[0]]: current[1] };
                 }
                 return previous;
             }, {});
@@ -100,7 +101,7 @@ class TextController {
                 textsConfig.where = filters;
             }
 
-             texts = await Text.findAndCountAll(textsConfig);
+            texts = await Text.findAndCountAll(textsConfig);
 
             return res.json(texts);
         } catch (e) {
@@ -108,12 +109,39 @@ class TextController {
         }
     }
 
-    async getOne(req, res) {
+    async getOne(req, res, next) {
+        try {
+            const { id } = req.params;
+            const text = await Text.findOne({
+                where: { id },
+                include: [{
+                    model: User,
+                    through: { attributes: [] },
+                    attributes: ['name', 'surname'],
+                }],
+            });
+            return res.json(text);
+
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
 
     }
 
-    async deleteOne(req, res) {
-
+    async deleteOne(req, res, next) {
+        try {
+            const { id } = req.params;
+            const text = await Text.findOne({
+                where: { id },
+            });
+            if (text) {
+                await text.destroy();
+                return res.json({message: `Текст с id ${id} успешно удален`});
+            }
+            throw new Error(`Текст с id ${id} не найден`);
+        } catch (e) {
+            next(ApiError.badRequest(e.message));
+        }
     }
 }
 
