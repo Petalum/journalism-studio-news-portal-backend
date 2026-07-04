@@ -28,7 +28,7 @@ class TextController {
         }
     }
 
-    async changeText(req, res) {
+    async changeText(req, res, next) {
         try {
             const { id } = req.params;
             const { body, title, dt_publish, dt_edit, authors_id } = req.body;
@@ -66,7 +66,7 @@ class TextController {
 
     }
 
-    async getAll(req, res) {
+    async getAll(req, res, next) {
         try {
             let { limit, page, authorId, categoryId, dt_publish } = req.query;
             page = page || 1;
@@ -109,7 +109,7 @@ class TextController {
         }
     }
 
-    async getOne(req, res) {
+    async getOne(req, res, next) {
         try {
             const { id } = req.params;
             const text = await Text.findOne({
@@ -128,7 +128,7 @@ class TextController {
 
     }
 
-    async deleteOne(req, res) {
+    async deleteOne(req, res, next) {
         try {
             const { id } = req.params;
             const text = await Text.findOne({
