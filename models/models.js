@@ -1,5 +1,6 @@
 const sequelize = require('../db');
 const {DataTypes} = require('sequelize');
+const { TextStatuses } = require('../constants');
 
 
 const User = sequelize.define('user', {
@@ -21,7 +22,7 @@ const Text = sequelize.define('text', {
     img: {type: DataTypes.STRING},
     dt_publish: {type: DataTypes.STRING},
     dt_edit: {type: DataTypes.STRING},
-    status: {type: DataTypes.STRING, allowNull: false, defaultValue: false},
+    status: {type: DataTypes.STRING, allowNull: false, defaultValue: TextStatuses.draft},
     categoryId: {type: DataTypes.INTEGER},
 });
 
