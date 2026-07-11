@@ -4,6 +4,38 @@ const { Text, User, TextUser } = require('../models/models');
 const ApiError = require('../error/apiError');
 const { Op } = require('sequelize');
 const sequelize = require('../db');
+const { TextStatuses } = require('../constants');
+const { Request, Response, NextFunction } = require('express');
+
+/**
+ * Change text status function.
+ * @param {string} status Text status
+ * @param {Request} req Request
+ * @param {Response} res Response
+ * @param {NextFunction} next It passes control to the succeeding middleware function in the application's request-response cycle
+ */
+async function changeTextStatus(status, req, res, next) {
+    try {
+        const { id } = req.params;
+        if (Number.isInteger(+id)) {
+            const text = await Text.findOne({
+                where: { id },
+            });
+            if (text) {
+                if (text.status === status) {
+                    throw new Error('Операция уже была выполнена ранее');
+                }
+                const updatedText = await text.update({ status });
+                return res.json(updatedText);
+            }
+            throw new Error(`Текст с id ${id} не найден`);
+        } else {
+            throw new Error('Идентификатор текста не указан');
+        }
+    } catch (e) {
+        next(ApiError.badRequest(e.message));
+    }
+}
 
 
 /** Controller for working with texts. */
@@ -136,12 +168,16 @@ class TextController {
             });
             if (text) {
                 await text.destroy();
-                return res.json({message: `Текст с id ${id} успешно удален`});
+                return res.json({ message: `Текст с id ${id} успешно удален` });
             }
             throw new Error(`Текст с id ${id} не найден`);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
+    }
+
+    async publish(req, res, next) {
+        await changeTextStatus(TextStatuses.published, req, res, next);
     }
 }
 
