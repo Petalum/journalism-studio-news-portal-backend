@@ -6,6 +6,13 @@ const TextStatuses = {
     published: 'published',
 };
 
+/** Error messages returned by the server. */
+const errorMessages = {
+    badTextId: 'Идентификатор текста не указан',
+    textAbcense: 'Текст отсутствует',
+}
+
 module.exports = {
     TextStatuses,
+    errorMessages,
 }

@@ -4,7 +4,7 @@ const { Text, User, TextUser } = require('../models/models');
 const ApiError = require('../error/apiError');
 const { Op } = require('sequelize');
 const sequelize = require('../db');
-const { TextStatuses } = require('../constants');
+const { TextStatuses, errorMessages } = require('../constants');
 const { Request, Response, NextFunction } = require('express');
 
 /**
@@ -28,9 +28,9 @@ async function changeTextStatus(status, req, res, next) {
                 const updatedText = await text.update({ status });
                 return res.json(updatedText);
             }
-            throw new Error(`Текст с id ${id} не найден`);
+            throw new Error(errorMessages.textAbcense);
         } else {
-            throw new Error('Идентификатор текста не указан');
+            throw new Error(errorMessages.badTextId);
         }
     } catch (e) {
         next(ApiError.badRequest(e.message));
@@ -87,10 +87,10 @@ class TextController {
 
                     return res.json(updatedText);
                 } else {
-                    return next(ApiError.badRequest('Текст отсутствует'));
+                    throw new Error(errorMessages.textAbcense);
                 }
             } else {
-                return next(ApiError.badRequest('Идентификатор текста не указан'));
+                throw new Error(errorMessages.badTextId);;
             }
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -144,15 +144,19 @@ class TextController {
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
-            const text = await Text.findOne({
-                where: { id },
-                include: [{
-                    model: User,
-                    through: { attributes: [] },
-                    attributes: ['name', 'surname'],
-                }],
-            });
-            return res.json(text);
+            if (Number.isInteger(+id)) {
+                const text = await Text.findOne({
+                    where: { id },
+                    include: [{
+                        model: User,
+                        through: { attributes: [] },
+                        attributes: ['name', 'surname'],
+                    }],
+                });
+                return res.json(text);
+            } else {
+                throw new Error(errorMessages.badTextId);
+            }
 
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -163,14 +167,18 @@ class TextController {
     async deleteOne(req, res, next) {
         try {
             const { id } = req.params;
-            const text = await Text.findOne({
-                where: { id },
-            });
-            if (text) {
-                await text.destroy();
-                return res.json({ message: `Текст с id ${id} успешно удален` });
+            if (Number.isInteger(+id)) {
+                const text = await Text.findOne({
+                    where: { id },
+                });
+                if (text) {
+                    await text.destroy();
+                    return res.json({ message: `Текст с id ${id} успешно удален` });
+                }
+                throw new Error(errorMessages.textAbcense);
+            } else {
+                throw new Error(errorMessages.badTextId);
             }
-            throw new Error(`Текст с id ${id} не найден`);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
