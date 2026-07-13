@@ -4,6 +4,38 @@ const { Text, User, TextUser } = require('../models/models');
 const ApiError = require('../error/apiError');
 const { Op } = require('sequelize');
 const sequelize = require('../db');
+const { TextStatuses, errorMessages } = require('../constants');
+const { Request, Response, NextFunction } = require('express');
+
+/**
+ * Change text status function.
+ * @param {string} status Text status
+ * @param {Request} req Request
+ * @param {Response} res Response
+ * @param {NextFunction} next It passes control to the succeeding middleware function in the application's request-response cycle
+ */
+async function changeTextStatus(status, req, res, next) {
+    try {
+        const { id } = req.params;
+        if (Number.isInteger(+id)) {
+            const text = await Text.findOne({
+                where: { id },
+            });
+            if (text) {
+                if (text.status === status) {
+                    throw new Error('Операция уже была выполнена ранее');
+                }
+                const updatedText = await text.update({ status });
+                return res.json(updatedText);
+            }
+            throw new Error(errorMessages.textAbcense);
+        } else {
+            throw new Error(errorMessages.badTextId);
+        }
+    } catch (e) {
+        next(ApiError.badRequest(e.message));
+    }
+}
 
 
 /** Controller for working with texts. */
@@ -55,10 +87,10 @@ class TextController {
 
                     return res.json(updatedText);
                 } else {
-                    return next(ApiError.badRequest('Текст отсутствует'));
+                    throw new Error(errorMessages.textAbcense);
                 }
             } else {
-                return next(ApiError.badRequest('Идентификатор текста не указан'));
+                throw new Error(errorMessages.badTextId);;
             }
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -112,15 +144,19 @@ class TextController {
     async getOne(req, res, next) {
         try {
             const { id } = req.params;
-            const text = await Text.findOne({
-                where: { id },
-                include: [{
-                    model: User,
-                    through: { attributes: [] },
-                    attributes: ['name', 'surname'],
-                }],
-            });
-            return res.json(text);
+            if (Number.isInteger(+id)) {
+                const text = await Text.findOne({
+                    where: { id },
+                    include: [{
+                        model: User,
+                        through: { attributes: [] },
+                        attributes: ['name', 'surname'],
+                    }],
+                });
+                return res.json(text);
+            } else {
+                throw new Error(errorMessages.badTextId);
+            }
 
         } catch (e) {
             next(ApiError.badRequest(e.message));
@@ -131,17 +167,33 @@ class TextController {
     async deleteOne(req, res, next) {
         try {
             const { id } = req.params;
-            const text = await Text.findOne({
-                where: { id },
-            });
-            if (text) {
-                await text.destroy();
-                return res.json({message: `Текст с id ${id} успешно удален`});
+            if (Number.isInteger(+id)) {
+                const text = await Text.findOne({
+                    where: { id },
+                });
+                if (text) {
+                    await text.destroy();
+                    return res.json({ message: `Текст с id ${id} успешно удален` });
+                }
+                throw new Error(errorMessages.textAbcense);
+            } else {
+                throw new Error(errorMessages.badTextId);
             }
-            throw new Error(`Текст с id ${id} не найден`);
         } catch (e) {
             next(ApiError.badRequest(e.message));
         }
+    }
+
+    async sendText(req, res, next) {
+        await changeTextStatus(TextStatuses.check, req, res, next);
+    }
+
+    async returnText(req, res, next) {
+        await changeTextStatus(TextStatuses.correct, req, res, next);
+    }
+
+    async publishText(req, res, next) {
+        await changeTextStatus(TextStatuses.published, req, res, next);
     }
 }
 
