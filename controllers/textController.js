@@ -184,6 +184,10 @@ class TextController {
         }
     }
 
+    async send(req, res, next) {
+        await changeTextStatus(TextStatuses.check, req, res, next);
+    }
+
     async publish(req, res, next) {
         await changeTextStatus(TextStatuses.published, req, res, next);
     }

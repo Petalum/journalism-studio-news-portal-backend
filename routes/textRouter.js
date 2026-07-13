@@ -4,6 +4,7 @@ const textController = require('../controllers/textController');
 
 router.post('/', textController.createText);
 router.put('/:id', textController.changeText);
+router.put('/:id/send', textController.send);
 router.put('/:id/publish', textController.publish);
 router.get('/', textController.getAll);
 router.get('/:id', textController.getOne);
