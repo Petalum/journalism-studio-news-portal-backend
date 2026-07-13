@@ -3,7 +3,7 @@ const ApiError = require('../error/apiError');
 
 /** Controller for working with user roles. */
 class RoleController {
-  async createRole(req, res) {
+  async createRole(req, res, next) {
     try {
       const { name } = req.body;
       const role = await Role.create({ name });
@@ -32,8 +32,13 @@ class RoleController {
     }
   }
 
-  async getAll(req, res) {
-    res.json('123');
+  async getAll(req, res, next) {
+    try {
+      const roles = await Role.findAll();
+      return res.json(roles);
+    } catch (e) {
+      next(ApiError.badRequest(e.message));
+    }
   }
 }
 
