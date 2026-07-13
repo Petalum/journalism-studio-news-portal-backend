@@ -48,8 +48,8 @@ const TextUser = sequelize.define('text_user', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 });
 
-User.hasOne(Role);
-Role.belongsTo(User);
+Role.hasMany(User);
+User.belongsTo(Role);
 
 User.belongsToMany(Text, { through: TextUser, onDelete: 'CASCADE' });
 Text.belongsToMany(User, { through: TextUser, onDelete: 'CASCADE' });
