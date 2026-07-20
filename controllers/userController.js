@@ -2,20 +2,12 @@ const ApiError = require('../error/apiError');
 const { User } = require('../models/models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const uuid = require('uuid');
+const mailService = require('../service/mailService');
+const tokenService = require('../service/tokenService');
+const UserDto = require('../dtos/userDto');
 
-/**
- * Generate json web token.
- * @param {number} id User id
- * @param {string} email User email
- * @param {role} role User role
- * @returns {string} Token
- */
-const createJwt = (id, email, role) => (jwt.sign(
-    { id, email, role },
-    process.env.SECRET_KEY,
-    { expiresIn: '24h' }
-));
-
+/** Controller for working with users. */
 class UserController {
     async registration(req, res, next) {
         try {
@@ -28,9 +20,14 @@ class UserController {
                 throw new Error('Пользователь с таким email уже существует');
             }
             const hashPas = await bcrypt.hash(password, 5);
-            const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas });
-            const token = createJwt(user.id, email, roleId);
-            return res.json({ token });
+            const activationLink = uuid.v4();
+            const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
+            await mailService.sendActivationMail(email, activationLink);
+            const dto = new UserDto(user);
+            const tokens = tokenService.generateTokens({...dto});
+            await tokenService.saveToken(dto.id, tokens.refreshToken);
+            res.cookie('refreshToken', tokens.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+            return res.json({ ...tokens, user: dto });
         } catch (e) {
             return next(ApiError.badRequest(e.message));
         }
