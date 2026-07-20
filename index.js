@@ -5,6 +5,7 @@ const path = require('path');
 const sequelize = require('./db');
 const models = require('./models/models.js');
 const cors = require('cors');
+const cookieParser = require('cookie-parser')
 const router = require('./routes/index');
 const errorHandler = require('./middleware/ErrorHandlingMiddleware.js');
 const fileUpload = require('express-fileupload');
@@ -12,6 +13,7 @@ const fileUpload = require('express-fileupload');
 const PORT = process.env.PORT || 4000;
 
 const app = express();
+app.use(cookieParser());
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.resolve(__dirname, 'static')));
