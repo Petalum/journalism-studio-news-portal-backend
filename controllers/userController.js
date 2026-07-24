@@ -22,7 +22,7 @@ class UserController {
             const hashPas = await bcrypt.hash(password, 5);
             const activationLink = uuid.v4();
             const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
-            await mailService.sendActivationMail(email, activationLink);
+            await mailService.sendActivationMail(email, `${process.env.API_URL}/api/activate/${activationLink}`);
             const dto = new UserDto(user);
             const tokens = tokenService.generateTokens({...dto});
             await tokenService.saveToken(dto.id, tokens.refreshToken);
