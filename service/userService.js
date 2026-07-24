@@ -8,6 +8,11 @@ const UserDto = require('../dtos/userDto');
 
 /** User management service. */
 class UserService {
+    /**
+     * User registration method.
+     * @param {Object} body - Request body
+     * @returns {Object} - Tokens and user info.
+     */
     async registration(body) {
         const { name, surname, patronymic, group, email, password, roleId } = body;
         if (!email || !password) {
