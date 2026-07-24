@@ -11,6 +11,8 @@ const User = sequelize.define('user', {
     surname: {type: DataTypes.STRING},
     patronymic: {type: DataTypes.STRING},
     group: {type: DataTypes.INTEGER},
+    isActivated: {type: DataTypes.STRING, defaultValue: false},
+    activationLink: {type: DataTypes.STRING},
 });
 
 const Text = sequelize.define('text', {
@@ -48,11 +50,19 @@ const TextUser = sequelize.define('text_user', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
 });
 
+const Token = sequelize.define('token', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    refreshToken: {type: DataTypes.STRING, required: true},
+});
+
 Role.hasMany(User);
 User.belongsTo(Role);
 
 User.belongsToMany(Text, { through: TextUser, onDelete: 'CASCADE' });
 Text.belongsToMany(User, { through: TextUser, onDelete: 'CASCADE' });
+
+User.hasMany(Token);
+Token.belongsTo(User);
 
 Text.hasMany(Comment);
 Comment.belongsTo(Text);
@@ -67,4 +77,5 @@ module.exports = {
     Comment,
     Category,
     TextUser,
+    Token,
 }

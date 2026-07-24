@@ -12,7 +12,16 @@ const errorMessages = {
     textAbcense: 'Текст отсутствует',
 }
 
+/** User roles list. */
+const RolesList = {
+    administrator: 'Administrator',
+    editor: 'Editor',
+    author: 'Author',
+    guest: 'Guest',
+}
+
 module.exports = {
     TextStatuses,
     errorMessages,
+    RolesList,
 }
