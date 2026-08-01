@@ -11,7 +11,7 @@ class UserController {
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
             return res.json(userData);
         } catch (e) {
-            return next(ApiError.badRequest(e.message));
+            next(e);
         }
     }
 
@@ -20,8 +20,8 @@ class UserController {
             const activationLink = req.params.link;
             await userService.activate(activationLink);
             return res.redirect(process.env.CLIENT_URL);
-        } catch(e) {
-             return next(ApiError.badRequest(e.message));
+        } catch (e) {
+            next(e);
         }
     }
 
@@ -36,7 +36,7 @@ class UserController {
             const token = createJwt(user.id, user.email, user.role);
             return res.json({ token });
         } catch (e) {
-            return next(ApiError.internal(e.message));
+            next(e);
         }
     }
 
@@ -44,7 +44,7 @@ class UserController {
     async check(req, res, next) {
         const { id } = req.query;
         if (!id) {
-            return next(ApiError.badRequest('Не задан id'));
+            next(ApiError.badRequest('Не задан id'));
         }
         res.json(id);
     }
