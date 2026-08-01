@@ -15,6 +15,16 @@ class UserController {
         }
     }
 
+    async activate(req, res, next) {
+        try {
+            const activationLink = req.params.link;
+            await userService.activate(activationLink);
+            return res.redirect(process.env.CLIENT_URL);
+        } catch(e) {
+             return next(ApiError.badRequest(e.message));
+        }
+    }
+
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -29,6 +39,7 @@ class UserController {
             return next(ApiError.internal(e.message));
         }
     }
+
 
     async check(req, res, next) {
         const { id } = req.query;
