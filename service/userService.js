@@ -5,22 +5,23 @@ const uuid = require('uuid');
 const mailService = require('../service/mailService');
 const tokenService = require('../service/tokenService');
 const UserDto = require('../dtos/userDto');
+const ApiError = require('../error/apiError');
 
 /** User management service. */
 class UserService {
     /**
      * User registration method.
-     * @param {Object} body - Request body
-     * @returns {Object} - Tokens and user info.
+     * @param {Object} body Request body
+     * @returns {Object} Tokens and user info.
      */
     async registration(body) {
         const { name, surname, patronymic, group, email, password, roleId } = body;
         if (!email || !password) {
-            throw new Error('Неверно указан email или пароль');
+            throw ApiError.badRequest('Неверно указан email или пароль');
         }
         const foundUser = await User.findOne({ where: { email } });
         if (foundUser) {
-            throw new Error('Пользователь с таким email уже существует');
+            throw ApiError.badRequest('Пользователь с таким email уже существует');
         }
         const hashPas = await bcrypt.hash(password, 5);
         const activationLink = uuid.v4();
@@ -38,12 +39,12 @@ class UserService {
 
     /**
      * User email activation method.
-     * @param {string} activationLink - Email activation link. 
+     * @param {string} activationLink Email activation link. 
      */
     async activate(activationLink) {
         const user = await User.findOne({ where: { activationLink } });
         if (!user) {
-            throw new Error('Ссылка активации некорректна');
+            throw ApiError.badRequest('Ссылка активации некорректна');
         }
         const activated = await user.update({ isActivated: true });
     }
