@@ -7,6 +7,22 @@ const tokenService = require('../service/tokenService');
 const UserDto = require('../dtos/userDto');
 const ApiError = require('../error/apiError');
 
+/**
+ * Create user dto and tokens. 
+ * @param {Object} user User model.
+ * @returns {Object} User info.
+ */
+const createUserInfo = async (user) => {
+    const dto = new UserDto(user);
+    const tokens = tokenService.generateTokens({ ...dto });
+    await tokenService.saveToken(dto.id, tokens.refreshToken);
+
+    return {
+        ...tokens,
+        user: dto,
+    }
+}
+
 /** User management service. */
 class UserService {
     /**
@@ -27,14 +43,8 @@ class UserService {
         const activationLink = uuid.v4();
         const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
-        const dto = new UserDto(user);
-        const tokens = tokenService.generateTokens({ ...dto });
-        await tokenService.saveToken(dto.id, tokens.refreshToken);
-
-        return {
-            ...tokens,
-            user: dto,
-        }
+        const info = createUserInfo(user);
+        return info;
     };
 
     /**
@@ -61,14 +71,8 @@ class UserService {
         if (!user || !checkPassword) {
             throw ApiError.unauthorized('Указан неверный логин или пароль');
         }
-        const dto = new UserDto(user);
-        const tokens = tokenService.generateTokens({ ...dto });
-        await tokenService.saveToken(dto.id, tokens.refreshToken);
-
-        return {
-            ...tokens,
-            user: dto,
-        }
+        const info = createUserInfo(user);
+        return info;
     }
 }
 
