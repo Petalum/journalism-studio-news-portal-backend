@@ -63,7 +63,7 @@ class UserService {
      * User login method.
      * @param {string} email Email.
      * @param {string} password Password.
-     * @returns {Object} User info  and tokens list.
+     * @returns {Object} User info and tokens list.
      */
     async login(email, password) {
         const user = await User.findOne({ where: { email } });
