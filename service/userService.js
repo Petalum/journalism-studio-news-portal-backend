@@ -48,6 +48,28 @@ class UserService {
         }
         const activated = await user.update({ isActivated: true });
     }
+
+    /**
+     * User login method.
+     * @param {string} email Email.
+     * @param {string} password Password.
+     * @returns {Object} User info  and tokens list.
+     */
+    async login(email, password) {
+        const user = await User.findOne({ where: { email } });
+        let checkPassword = user ? bcrypt.compareSync(password, user.password) : null;
+        if (!user || !checkPassword) {
+            throw ApiError.unauthorized('Указан неверный логин или пароль');
+        }
+        const dto = new UserDto(user);
+        const tokens = tokenService.generateTokens({ ...dto });
+        await tokenService.saveToken(dto.id, tokens.refreshToken);
+
+        return {
+            ...tokens,
+            user: dto,
+        }
+    }
 }
 
 module.exports = new UserService();
