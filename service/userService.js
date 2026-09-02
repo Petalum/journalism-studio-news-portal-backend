@@ -7,6 +7,22 @@ const tokenService = require('../service/tokenService');
 const UserDto = require('../dtos/userDto');
 const ApiError = require('../error/apiError');
 
+/**
+ * Create user dto and tokens. 
+ * @param {Object} user User model.
+ * @returns {Object} User info.
+ */
+const createUserInfo = async (user) => {
+    const dto = new UserDto(user);
+    const tokens = tokenService.generateTokens({ ...dto });
+    await tokenService.saveToken(dto.id, tokens.refreshToken);
+
+    return {
+        ...tokens,
+        user: dto,
+    }
+}
+
 /** User management service. */
 class UserService {
     /**
@@ -27,14 +43,8 @@ class UserService {
         const activationLink = uuid.v4();
         const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
-        const dto = new UserDto(user);
-        const tokens = tokenService.generateTokens({ ...dto });
-        await tokenService.saveToken(dto.id, tokens.refreshToken);
-
-        return {
-            ...tokens,
-            user: dto,
-        }
+        const info = createUserInfo(user);
+        return info;
     };
 
     /**
@@ -47,6 +57,22 @@ class UserService {
             throw ApiError.badRequest('Ссылка активации некорректна');
         }
         const activated = await user.update({ isActivated: true });
+    }
+
+    /**
+     * User login method.
+     * @param {string} email Email.
+     * @param {string} password Password.
+     * @returns {Object} User info and tokens list.
+     */
+    async login(email, password) {
+        const user = await User.findOne({ where: { email } });
+        let checkPassword = user ? bcrypt.compareSync(password, user.password) : null;
+        if (!user || !checkPassword) {
+            throw ApiError.unauthorized('Указан неверный логин или пароль');
+        }
+        const info = createUserInfo(user);
+        return info;
     }
 }
 

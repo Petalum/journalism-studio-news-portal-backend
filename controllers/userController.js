@@ -33,13 +33,9 @@ class UserController {
     async login(req, res, next) {
         try {
             const { email, password } = req.body;
-            const user = await User.findOne({ where: { email } });
-            let checkPassword = user ? bcrypt.compareSync(password, user.password) : null;
-            if (!user || !checkPassword) {
-                return next(ApiError.unauthorized('Указан неверный логин или пароль'));
-            }
-            const token = createJwt(user.id, user.email, user.role);
-            return res.json({ token });
+            const userData = await userService.login(email, password);
+            res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+            return res.json(userData);
         } catch (e) {
             next(e);
         }
