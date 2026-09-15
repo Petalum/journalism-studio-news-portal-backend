@@ -74,6 +74,16 @@ class UserService {
         const info = createUserInfo(user);
         return info;
     }
+
+    /**
+     * User logout method.
+     * @param {string} refreshToken Refresh token.
+     * @returns {string} Refresh token.
+     */
+    async logout(refreshToken) {
+        const token = await tokenService.removeToken(refreshToken);
+        return token;
+    }
 }
 
 module.exports = new UserService();

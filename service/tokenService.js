@@ -15,7 +15,7 @@ class TokenService {
             process.env.JWT_REFRESH_SECRET_KEY,
             { expiresIn: '30d' }
         );
-        
+
 
         return {
             accessToken,
@@ -26,13 +26,17 @@ class TokenService {
     async saveToken(userId, refreshToken) {
         const tokenData = await Token.findOne({ where: { userId } });
         if (tokenData) {
-            const updatedData = await tokenData.update({refreshToken});
+            const updatedData = await tokenData.update({ refreshToken });
             return updatedData;
         }
 
-         const token = await Token.create({userId, refreshToken});
-         return token;
+        const token = await Token.create({ userId, refreshToken });
+        return token;
+    }
 
+    async removeToken(refreshToken) {
+        const tokenData = await Token.destroy({ where: { refreshToken } });
+        return 'Токен удалён';
     }
 }
 
