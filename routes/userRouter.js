@@ -10,6 +10,7 @@ router.post('/registration',
 router.post('/login', userController.login);
 router.post('/logout', userController.logout);
 router.get('/auth', userController.check);
+router.get('/refresh', userController.refresh);
 router.get('/activate/:link', userController.activate);
 
 module.exports = router;

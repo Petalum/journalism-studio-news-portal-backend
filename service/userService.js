@@ -43,7 +43,7 @@ class UserService {
         const activationLink = uuid.v4();
         const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
-        const info = createUserInfo(user);
+        const info = await createUserInfo(user);
         return info;
     };
 
@@ -71,7 +71,7 @@ class UserService {
         if (!user || !checkPassword) {
             throw ApiError.unauthorized('Указан неверный логин или пароль');
         }
-        const info = createUserInfo(user);
+        const info = await createUserInfo(user);
         return info;
     }
 
@@ -83,6 +83,25 @@ class UserService {
     async logout(refreshToken) {
         const token = await tokenService.removeToken(refreshToken);
         return token;
+    }
+
+    /**
+     * Token reissue method.
+     * @param {string} refreshToken Refresh token.
+     * @returns {Object} Tokens and user info.
+     */
+    async refresh(refreshToken) {
+        if (!refreshToken) {
+            throw ApiError.unauthorized();
+        }
+        const userData = tokenService.validateRefreshToken(refreshToken);
+        const token = await tokenService.findToken(refreshToken);
+        if (!userData || !token) {
+            throw ApiError.unauthorized();
+        }
+        const user = await User.findByPk(userData.id);
+        const info = await createUserInfo(user);
+        return info;
     }
 }
 
