@@ -103,6 +103,12 @@ class UserService {
         const info = await createUserInfo(user);
         return info;
     }
+
+    /** Method for retrieving all users. */
+    async getAllUsers() {
+        const users = await User.findAll();
+        return users;
+    }
 }
 
 module.exports = new UserService();
