@@ -13,6 +13,6 @@ router.post('/logout', userController.logout);
 router.get('/auth', userController.check);
 router.get('/refresh', userController.refresh);
 router.get('/activate/:link', userController.activate);
-router.get('/users', userController.getUsers);
+router.get('/users', authMiddleware, userController.getUsers);
 
 module.exports = router;
