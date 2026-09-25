@@ -104,7 +104,7 @@ class UserService {
         return info;
     }
 
-    /** Method for retrieving all users. */
+    /** Method for retrieving users list. */
     async getAllUsers() {
         const users = await User.findAll();
         return users;
