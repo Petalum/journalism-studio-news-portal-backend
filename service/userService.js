@@ -86,7 +86,7 @@ class UserService {
     }
 
     /**
-     * User refresh nethod.
+     * User refresh method.
      * @param {string} refreshToken Refresh token.
      * @returns {Object} Tokens and user info.
      */
