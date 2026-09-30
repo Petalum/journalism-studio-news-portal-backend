@@ -3,6 +3,7 @@ const router = new Router();
 const userController = require('../controllers/userController');
 const { body } = require('express-validator');
 const authMiddleware = require('../middleware/AuthMiddleware');
+const { RolesCodes } = require('../constants');
 
 router.post('/registration',
     body('email').isEmail(),
@@ -13,6 +14,6 @@ router.post('/logout', userController.logout);
 router.get('/auth', userController.check);
 router.get('/refresh', userController.refresh);
 router.get('/activate/:link', userController.activate);
-router.get('/users', authMiddleware, userController.getUsers);
+router.get('/users', authMiddleware([RolesCodes.author]), userController.getUsers);
 
 module.exports = router;

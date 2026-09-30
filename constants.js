@@ -13,15 +13,15 @@ const errorMessages = {
 }
 
 /** User roles list. */
-const RolesList = {
-    administrator: 'Administrator',
-    editor: 'Editor',
-    author: 'Author',
-    guest: 'Guest',
+const RolesCodes = {
+    administrator: 'administrator',
+    editor: 'editor',
+    author: 'author',
+    guest: 'guest',
 }
 
 module.exports = {
     TextStatuses,
     errorMessages,
-    RolesList,
+    RolesCodes,
 }
