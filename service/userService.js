@@ -1,4 +1,4 @@
-const { User } = require('../models/models');
+const { Role, User } = require('../models/models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
@@ -31,9 +31,15 @@ class UserService {
      * @returns {Object} Tokens and user info.
      */
     async registration(body) {
-        const { name, surname, patronymic, group, email, password, roleId } = body;
+        const { name, surname, patronymic, group, email, password, role } = body;
         if (!email || !password) {
             throw ApiError.badRequest('Неверно указан email или пароль');
+        }
+
+        const foundRole = await Role.findOne({ where: { code: role } });
+
+        if (!foundRole) {
+            throw ApiError.badRequest('Неверно указана роль');
         }
         const foundUser = await User.findOne({ where: { email } });
         if (foundUser) {
@@ -41,7 +47,7 @@ class UserService {
         }
         const hashPas = await bcrypt.hash(password, 5);
         const activationLink = uuid.v4();
-        const user = await User.create({ name, surname, patronymic, group, email, roleId, password: hashPas, activationLink });
+        const user = await User.create({ name, surname, patronymic, group, email, roleId: foundRole.id, roleCode: foundRole.code, password: hashPas, activationLink });
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
         const info = await createUserInfo(user);
         return info;
@@ -106,7 +112,12 @@ class UserService {
 
     /** Method for retrieving users list. */
     async getAllUsers() {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            include: {
+                model: Role,
+                attributes: ['code', 'name']
+            }
+        });
         return users;
     }
 }

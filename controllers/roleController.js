@@ -5,8 +5,8 @@ const ApiError = require('../error/apiError');
 class RoleController {
   async createRole(req, res, next) {
     try {
-      const { name } = req.body;
-      const role = await Role.create({ name });
+      const { name, code } = req.body;
+      const role = await Role.create({ name, code });
       return res.json(role);
     } catch (e) {
       next(ApiError.badRequest(e.message));
