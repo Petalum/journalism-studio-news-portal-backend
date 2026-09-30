@@ -21,7 +21,7 @@ class ApiError extends Error {
         return new ApiError(404, message);
     }
 
-    static forbidden(message) {
+    static forbidden(message = 'Доступ запрещён') {
         return new ApiError(403, message);
     }
 
