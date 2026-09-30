@@ -13,6 +13,7 @@ const User = sequelize.define('user', {
     group: {type: DataTypes.INTEGER},
     isActivated: {type: DataTypes.STRING, defaultValue: false},
     activationLink: {type: DataTypes.STRING},
+    roleCode: {type: DataTypes.STRING, defaultValue: 'guest'},
 });
 
 const Text = sequelize.define('text', {
@@ -30,6 +31,7 @@ const Text = sequelize.define('text', {
 
 const Role = sequelize.define('role', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    code: {type: DataTypes.STRING, unique: true},
     name: {type: DataTypes.STRING, unique: true, allowNull: false},
 });
 
